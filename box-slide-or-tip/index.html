@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>推木箱：先滑動還是先傾倒？｜範例 11 互動解題（Claude 版）</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect x=%224%22 y=%221%22 width=%228%22 height=%2214%22 fill=%22%23e2be80%22 stroke=%22%238a5a2b%22/%3E%3C/svg%3E">
+<meta name="description" content="高中物理：摩擦力、力矩與正向力作用點。互動動畫看木箱何時滑動、何時傾倒，並附三小題完整計算步驟。Claude 版。">
+<style>
+:root{
+  --bg:#f5f2ea; --card:#fffdf8; --ink:#1d2632; --muted:#5b6674; --line:#e2dccd; --soft:#f0ebdf;
+  --accent:#23497a; --accent-soft:#e3ebf6;
+  --F:#cf3b35; --W:#16866a; --N:#2c5fc8; --f:#d48500;
+  --ok:#1c7a4c; --crit:#b5222b; --warn:#a86400;
+  --r:14px;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Heiti TC",system-ui,sans-serif;
+  --serif:"Times New Roman","Noto Serif TC",serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+a{color:var(--accent)}
+i.v{font-family:var(--serif);font-style:italic;font-size:1.06em}
+sub{font-size:.72em}
+.wrap{max-width:1240px;margin:0 auto;padding:0 18px}
+header.top{padding:26px 0 10px}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#1d2632;color:#fff;border-radius:999px;padding:3px 12px;font-size:13px;letter-spacing:.06em;font-weight:600}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:#e8a33b}
+h1{font-size:clamp(24px,3.4vw,36px);line-height:1.25;margin:12px 0 6px;letter-spacing:.01em}
+.sub{color:var(--muted);margin:0;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.problem{padding:16px 20px;margin:16px 0}
+.problem h2{font-size:16px;margin:0 0 6px;color:var(--accent);letter-spacing:.04em}
+.problem ol{margin:6px 0 4px;padding-left:2.2em}
+.problem li{margin:2px 0}
+.problem details{margin-top:6px;color:var(--muted);font-size:15px}
+.problem summary{cursor:pointer;color:var(--accent);font-weight:600}
+
+/* ---------- lab layout ---------- */
+.lab{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:16px;align-items:start}
+@media (max-width:980px){.lab{grid-template-columns:1fr}}
+.stage{padding:12px 12px 14px;position:relative}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.seg{display:inline-flex;background:var(--soft);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font:inherit;font-size:14px;padding:6px 12px;border-radius:8px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.btn{border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;padding:6px 12px;border-radius:9px;cursor:pointer;color:var(--ink);display:inline-flex;gap:6px;align-items:center}
+.btn:hover{border-color:#c9c0ab}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#1b3a63}
+.spacer{flex:1}
+.canvas-box{position:relative;border-radius:10px;overflow:hidden;background:#fbfaf6;border:1px solid var(--soft)}
+#scene{display:block;width:100%;touch-action:none}
+.banner{position:absolute;left:10px;top:10px;right:10px;pointer-events:none;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.banner .pill{background:rgba(255,255,255,.94);border:1px solid var(--line);border-left:5px solid var(--ok);border-radius:8px;padding:4px 10px;font-size:14px;font-weight:600;max-width:100%;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.banner .pill.crit{border-left-color:var(--crit);color:var(--crit)}
+.banner .pill.bad{border-left-color:var(--crit);background:#fff4f3;color:var(--crit)}
+.banner .pill.warn{border-left-color:var(--warn)}
+.banner .note{background:rgba(255,255,255,.9);border-radius:6px;padding:2px 8px;font-size:13px;color:var(--muted)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin-top:12px}
+@media (max-width:620px){.controls{grid-template-columns:1fr}}
+.ctl label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+.ctl label b{color:var(--ink);font-variant-numeric:tabular-nums}
+.ctl input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+.ctl.F input[type=range]{accent-color:var(--F)}
+.ctl .hint{font-size:12.5px;color:var(--muted);line-height:1.4}
+.toggles{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted)}
+.toggles label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+details.adv{grid-column:1/-1;font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px}
+details.adv summary{cursor:pointer}
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-top:8px}
+@media (max-width:620px){.adv-grid{grid-template-columns:1fr}}
+
+/* ---------- side panel ---------- */
+.panel{display:flex;flex-direction:column;gap:12px}
+.panel .card{padding:12px 14px}
+.panel h3{margin:0 0 6px;font-size:15px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.panel h3 small{font-weight:400;color:var(--muted);font-size:12.5px}
+table.forces{width:100%;border-collapse:collapse;font-size:14px}
+table.forces td{padding:3px 4px;border-bottom:1px solid var(--soft)}
+table.forces td:nth-child(2){text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+table.forces td:nth-child(3){color:var(--muted);font-size:12.5px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.tbars{display:flex;flex-direction:column;gap:5px;font-size:13.5px}
+.trow{display:grid;grid-template-columns:30px 1fr 64px;gap:8px;align-items:center}
+.trow .nm{font-weight:600}
+.trow .track{position:relative;height:16px;background:var(--soft);border-radius:4px}
+.trow .track::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1.5px;background:#9aa3ad}
+.trow .fill{position:absolute;top:2px;bottom:2px;border-radius:3px;transition:none}
+.trow .val{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.trow.sum{border-top:1px dashed var(--line);padding-top:5px}
+.taxis{display:grid;grid-template-columns:30px 1fr 64px;gap:8px;font-size:11.5px;color:var(--muted)}
+.taxis div:nth-child(2){display:flex;justify-content:space-between}
+.eqline{font-size:13.5px;background:var(--soft);border-radius:8px;padding:6px 8px;margin-top:8px;line-height:1.55;overflow-wrap:anywhere}
+.eqline.bad{background:#fff0ef;color:var(--crit)}
+.gauge{position:relative;height:64px;margin:6px 8px 0}
+.gauge .base{position:absolute;left:0;right:0;top:20px;height:10px;background:#e9c98f;border:1.5px solid #8a5a2b;border-radius:2px}
+.gauge .tick{position:absolute;top:44px;font-size:11.5px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.gauge .wl{position:absolute;top:8px;height:24px;width:0;border-left:2px dashed var(--W)}
+.gauge .nm{position:absolute;top:30px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid var(--N);transform:translateX(-7px)}
+.gauge .shift{position:absolute;top:4px;height:2px;background:var(--N)}
+.gauge .shift::before{content:"";position:absolute;left:-1px;top:-4px;border-right:7px solid var(--N);border-top:5px solid transparent;border-bottom:5px solid transparent}
+#fh{display:block;width:100%;touch-action:none;cursor:crosshair}
+.legend{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:4px}
+
+/* ---------- solutions ---------- */
+.sol{margin:18px 0;padding:0}
+.tabs{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:8px 10px 0}
+.tabs button{border:0;background:transparent;font:inherit;font-size:15px;padding:8px 14px;border-radius:10px 10px 0 0;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700;background:var(--accent-soft)}
+.tabpanel{padding:16px 22px 22px;display:none}
+.tabpanel.on{display:block}
+.tabpanel h3{font-size:18px;margin:18px 0 8px;color:var(--accent)}
+.tabpanel h3:first-child{margin-top:4px}
+.tabpanel p{margin:6px 0}
+.demo{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px}
+.demo .btn{font-size:13.5px}
+.demo .btn.primary{font-weight:600}
+ol.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+ol.steps>li{counter-increment:st;position:relative;padding:10px 12px 10px 74px;border:1px solid var(--line);border-radius:12px;margin:8px 0;background:#fff}
+ol.steps>li::before{content:"步驟 " counter(st);position:absolute;left:10px;top:11px;font-size:12.5px;font-weight:700;color:#fff;background:var(--accent);border-radius:6px;padding:2px 0;width:54px;text-align:center;line-height:1.35;white-space:nowrap}
+ol.steps .st{font-weight:700;margin-bottom:2px}
+.eq{font-size:16.5px;background:var(--soft);border-radius:8px;padding:6px 12px;margin:6px 0;overflow-x:auto;white-space:nowrap}
+.eq .why{font-size:13px;color:var(--muted);margin-left:10px;white-space:normal}
+.ans{border:2px solid var(--accent);background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin:12px 0;font-size:17px;font-weight:700}
+.ans small{display:block;font-weight:400;font-size:14px;color:var(--muted)}
+.key{border-left:5px solid var(--f);background:#fff7e6;border-radius:8px;padding:10px 14px;margin:12px 0}
+.warnbox{border-left:5px solid var(--crit);background:#fff2f1;border-radius:8px;padding:10px 14px;margin:12px 0}
+table.t{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+table.t th{background:var(--soft);font-weight:600}
+.tw{overflow-x:auto}
+.c-F{color:var(--F);font-weight:700}.c-W{color:var(--W);font-weight:700}.c-N{color:var(--N);font-weight:700}.c-f{color:var(--f);font-weight:700}
+details.q{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:8px 0;background:#fff}
+details.q summary{cursor:pointer;font-weight:600}
+details.q[open] summary{margin-bottom:6px}
+footer{color:var(--muted);font-size:13.5px;padding:10px 0 34px;text-align:center}
+footer .badge{font-size:12px}
+@media (max-width:620px){
+  .wrap{padding:0 10px}
+  .tabpanel{padding:12px 12px 18px}
+  ol.steps>li{padding:34px 10px 10px 10px}
+  ol.steps>li::before{top:8px;left:10px;width:auto;padding:1px 8px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <span class="badge"><span class="dot"></span>Claude 版</span>
+  <h1>推木箱：先滑動，還是先傾倒？</h1>
+  <p class="sub">範例 11｜摩擦力、力矩平衡與正向力作用點——互動動畫 + 三小題完整計算</p>
+</header>
+
+<section class="card problem" aria-labelledby="ptitle">
+  <h2 id="ptitle">題目</h2>
+  <div>如圖，一重量 2 kgw 的均勻木箱寬度 2 公尺、高度 4 公尺，置於水平面上，已知木箱與地面間的靜摩擦係數為 <i class="v">μ</i><sub>s</sub> = 0.5、動摩擦係數為 <i class="v">μ</i><sub>k</sub> = 0.4，若於高度為 <i class="v">h</i> 之 P 點施一水平力 <i class="v">F</i> 推此木箱，則</div>
+  <ol>
+    <li>使木箱恰將開始滑動的同時，亦恰開始以 x 軸為轉軸發生轉動，<i class="v">h</i> 為何？</li>
+    <li>欲使木箱維持等速向左移動，且不使物體傾倒的 <i class="v">h</i> 的最大值是？</li>
+    <li>若 <i class="v">h</i> = 1.5 m，<i class="v">F</i> = 0.8 kgw，則地面給予木箱之正向力對 x 軸的力矩為何？若可將正向力視為在接觸面上的單一位置作用，則此時正向力的施力點位置距離 O 點多遠？</li>
+  </ol>
+  <details><summary>先想一想，再看答案</summary>(1) 2 m　(2) 2.5 m　(3) 0.8 kgw·m（逆時針，即 +x 方向）；0.4 m。完整計算在下方「解題」區。</details>
+</section>
+
+<section class="lab" id="lab">
+  <div class="card stage">
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="情境">
+        <button id="mRamp" aria-pressed="true">從靜止慢慢加力</button>
+        <button id="mMove" aria-pressed="false">等速滑動中</button>
+      </div>
+      <span class="spacer"></span>
+      <button class="btn primary" id="play">▶ 從 F = 0 慢慢加力</button>
+      <button class="btn" id="reset">⟲ 重設</button>
+    </div>
+    <div class="canvas-box">
+      <canvas id="scene" aria-label="木箱受力動畫：可看到推力 F、重力 W、正向力 N、摩擦力 f 與正向力作用點的位置"></canvas>
+      <div class="banner" aria-live="polite"><div class="pill" id="status">靜止平衡</div><div class="note" id="note" hidden></div></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="hR"><span>施力高度 <i class="v">h</i></span><b id="hV">1.50 m</b></label>
+        <input id="hR" type="range" min="0" max="4" step="0.05" value="1.5">
+        <div class="hint">P 點離地高度（0 ~ 4 m）</div>
+      </div>
+      <div class="ctl F">
+        <label for="FR"><span>推力 <i class="v">F</i></span><b id="FV">0.80 kgw</b></label>
+        <input id="FR" type="range" min="0" max="2.5" step="0.01" value="0.8">
+        <div class="hint" id="Fhint">放開滑桿後，若超過臨界值，木箱會開始滑動或傾倒</div>
+      </div>
+      <div class="toggles">
+        <label><input type="checkbox" id="tArms" checked> 顯示力臂</label>
+        <label><input type="checkbox" id="tDist"> 顯示地面支撐力的分布（示意）</label>
+        <label><input type="checkbox" id="tVals" checked> 力的數值</label>
+      </div>
+      <details class="adv">
+        <summary>進階：改變摩擦係數（解題區仍用題目數值）</summary>
+        <div class="adv-grid">
+          <div class="ctl"><label for="msR"><span>靜摩擦係數 <i class="v">μ</i><sub>s</sub></span><b id="msV">0.50</b></label><input id="msR" type="range" min="0.1" max="1" step="0.05" value="0.5"></div>
+          <div class="ctl"><label for="mkR"><span>動摩擦係數 <i class="v">μ</i><sub>k</sub></span><b id="mkV">0.40</b></label><input id="mkR" type="range" min="0.05" max="1" step="0.05" value="0.4"></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div class="card">
+      <h3><span>受力分析</span><small id="frozen"></small></h3>
+      <table class="forces">
+        <tr><td><span class="sw" style="background:var(--F)"></span>推力 <i class="v">F</i></td><td id="vF">—</td><td>水平向左</td></tr>
+        <tr><td><span class="sw" style="background:var(--W)"></span>重力 <i class="v">W</i></td><td id="vW">—</td><td>作用在重心 G</td></tr>
+        <tr><td><span class="sw" style="background:var(--N)"></span>正向力 <i class="v">N</i></td><td id="vN">—</td><td>鉛直力平衡 N = W</td></tr>
+        <tr><td><span class="sw" style="background:var(--f)"></span>摩擦力 <i class="v">f</i></td><td id="vf">—</td><td id="vfT">—</td></tr>
+        <tr><td>最大靜摩擦 <i class="v">μ</i><sub>s</sub><i class="v">N</i></td><td id="vFs">—</td><td>超過就滑動</td></tr>
+        <tr><td>動摩擦 <i class="v">μ</i><sub>k</sub><i class="v">N</i></td><td id="vFk">—</td><td>滑動時的摩擦力</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3><span>對 x 軸（過 O 點）的力矩</span><small>單位 kgw·m</small></h3>
+      <div class="tbars">
+        <div class="taxis"><div></div><div><span>← 順時針（−）</span><span>逆時針（+）→</span></div><div></div></div>
+        <div class="trow"><span class="nm c-F">F</span><div class="track"><div class="fill" id="bF" style="background:var(--F)"></div></div><span class="val" id="tF">—</span></div>
+        <div class="trow"><span class="nm c-W">W</span><div class="track"><div class="fill" id="bW" style="background:var(--W)"></div></div><span class="val" id="tW">—</span></div>
+        <div class="trow"><span class="nm c-N">N</span><div class="track"><div class="fill" id="bN" style="background:var(--N)"></div></div><span class="val" id="tN">—</span></div>
+        <div class="trow"><span class="nm c-f">f</span><div class="track"><div class="fill" id="bf" style="background:var(--f)"></div></div><span class="val" id="tf">0.00</span></div>
+        <div class="trow sum"><span class="nm">Σ</span><div class="track"><div class="fill" id="bS" style="background:#59636f"></div></div><span class="val" id="tS">—</span></div>
+      </div>
+      <div class="eqline" id="tEq">—</div>
+    </div>
+
+    <div class="card">
+      <h3><span>正向力作用點 <i class="v">d</i>（距 O 點）</span><small id="dV">—</small></h3>
+      <div class="gauge" id="gauge">
+        <div class="base"></div>
+        <div class="wl" id="gW" style="left:50%"></div>
+        <div class="shift" id="gShift"></div>
+        <div class="nm" id="gN"></div>
+        <div class="tick" style="left:0;transform:none">O 點（0）</div>
+        <div class="tick" style="left:50%">1 m（G 正下方）</div>
+        <div class="tick" style="left:100%;transform:translateX(-100%)">2 m</div>
+      </div>
+      <div class="eqline" id="dEq">—</div>
+    </div>
+
+    <div class="card">
+      <h3><span><i class="v">F</i>–<i class="v">h</i> 判斷圖</span><small>可點或拖曳設定 F、h</small></h3>
+      <canvas id="fh" aria-label="F 與 h 的判斷圖：靜止、先滑動、先傾倒三個區域"></canvas>
+      <div class="legend">從左往右＝F 慢慢變大。先碰到<b style="color:var(--f)">直線 F = μ<sub>s</sub>N</b>就先滑動，先碰到<b style="color:var(--F)">曲線 F·h = W×1</b>就先傾倒。兩線交點就是第 (1) 題。</div>
+    </div>
+  </aside>
+</section>
+
+<section class="card sol" id="sol">
+  <div class="tabs" role="tablist" aria-label="解題">
+    <button role="tab" aria-selected="true" data-tab="t0">解題前的設定</button>
+    <button role="tab" aria-selected="false" data-tab="t1">第 (1) 題</button>
+    <button role="tab" aria-selected="false" data-tab="t2">第 (2) 題</button>
+    <button role="tab" aria-selected="false" data-tab="t3">第 (3) 題</button>
+    <button role="tab" aria-selected="false" data-tab="t4">迷思與想一想</button>
+  </div>
+
+  <!-- ===================== 設定 ===================== -->
+  <div class="tabpanel on" id="t0" role="tabpanel">
+    <h3>1. 先把題目翻成物理語言</h3>
+    <ul>
+      <li>木箱寬 <i class="v">b</i> = 2 m、高 <i class="v">H</i> = 4 m，重量 <i class="v">W</i> = 2 kgw。木箱均勻，所以<b>重心 G 在正中央</b>：離 O 點水平 1 m、高 2 m。</li>
+      <li>推力 <span class="c-F">F</span> 水平向左（−y 方向），作用在右側面、高度 <i class="v">h</i> 的 P 點。</li>
+      <li>地面給木箱兩個力：<span class="c-N">正向力 N</span>（向上）與<span class="c-f">摩擦力 f</span>（沿地面向右，阻止木箱向左）。</li>
+      <li><b>x 軸</b>通過 O 點、垂直紙面（指出紙面）。O 是木箱左下角的稜邊：木箱被向左推而翻倒時，就是繞這條邊轉。</li>
+    </ul>
+
+    <h3>2. 力矩的正負號</h3>
+    <p>本頁規定：使木箱繞 x 軸<b>逆時針</b>轉（也就是向左翻倒的方向）的力矩為正，順時針為負。用右手定則，逆時針的力矩指向 +x（指出紙面）。</p>
+
+    <h3>3. 四個力對 x 軸的力矩：力矩 = 力 × 力臂</h3>
+    <p>力臂是「轉軸到力的作用線的垂直距離」，不是轉軸到作用點的距離。</p>
+    <div class="tw"><table class="t">
+      <tr><th>力</th><th>作用線</th><th>力臂</th><th>對 x 軸的力矩</th><th>轉向</th></tr>
+      <tr><td class="c-F">F</td><td>高度 h 的水平線</td><td><i class="v">h</i></td><td>+<i class="v">F</i>·<i class="v">h</i></td><td>逆時針</td></tr>
+      <tr><td class="c-W">W</td><td>通過 G 的鉛直線（y = 1 m）</td><td>1 m</td><td>−<i class="v">W</i> × 1</td><td>順時針</td></tr>
+      <tr><td class="c-N">N</td><td>距 O 點 d 的鉛直線</td><td><i class="v">d</i></td><td>+<i class="v">N</i>·<i class="v">d</i></td><td>逆時針</td></tr>
+      <tr><td class="c-f">f</td><td>就在地面上，通過 x 軸</td><td>0</td><td>0</td><td>—</td></tr>
+    </table></div>
+    <p>選 O 點的 x 軸當轉軸的好處：摩擦力 <i class="v">f</i> 的力矩是 0，方程式最少一個未知數。</p>
+
+    <h3>4. 平衡的三個方程式（靜止、或等速度平移都適用）</h3>
+    <div class="eq">① 鉛直方向：<i class="v">N</i> − <i class="v">W</i> = 0　⇒　<i class="v">N</i> = <i class="v">W</i> = 2 kgw</div>
+    <div class="eq">② 水平方向：<i class="v">f</i> − <i class="v">F</i> = 0　⇒　<i class="v">f</i> = <i class="v">F</i></div>
+    <div class="eq">③ 對 x 軸力矩：<i class="v">F</i>·<i class="v">h</i> − <i class="v">W</i>×1 + <i class="v">N</i>·<i class="v">d</i> = 0　⇒　<i class="v">d</i> = (<i class="v">W</i>×1 − <i class="v">F</i>·<i class="v">h</i>) ÷ <i class="v">N</i></div>
+
+    <div class="key"><b>核心觀念：兩個「會自動調整、但有上限」的力</b><br>
+    ● 摩擦力 <i class="v">f</i> 會自動等於 <i class="v">F</i>，但最多只能到 <i class="v">μ</i><sub>s</sub><i class="v">N</i>。<i class="v">f</i> = <i class="v">μ</i><sub>s</sub><i class="v">N</i> 就是<b>恰將滑動</b>。<br>
+    ● 正向力的作用點 <i class="v">d</i> 會自動移動來維持力矩平衡：<i class="v">F</i>·<i class="v">h</i> 越大，<i class="v">d</i> 越靠近 O。但 <i class="v">d</i> 不能小於 0，因為正向力只能出現在木箱與地面接觸的地方。<i class="v">d</i> = 0 就是<b>恰將傾倒</b>：木箱右下角恰要離地，地面只在 O 點撐住木箱。</div>
+    <p>所以有兩個上限：<b>不滑動</b>需要 <i class="v">F</i> ≤ <i class="v">μ</i><sub>s</sub><i class="v">N</i>；<b>不傾倒</b>需要 <i class="v">F</i>·<i class="v">h</i> ≤ <i class="v">W</i>×1。右側的「F–h 判斷圖」就是把這兩個不等式畫出來。</p>
+    <div class="demo"><button class="btn" data-demo="dist">在動畫中看「d 隨 F 移動」</button></div>
+  </div>
+
+  <!-- ===================== (1) ===================== -->
+  <div class="tabpanel" id="t1" role="tabpanel">
+    <h3>第 (1) 題：恰將滑動，同時恰將以 x 軸轉動，h = ?</h3>
+    <div class="demo">
+      <button class="btn primary" data-demo="q1">▶ 演示：h = 2 m，F 從 0 慢慢加到 1 kgw</button>
+      <button class="btn" data-demo="q1lo">比較：h = 1.5 m（先滑動）</button>
+      <button class="btn" data-demo="q1hi">比較：h = 3 m（先傾倒）</button>
+    </div>
+    <ol class="steps">
+      <li><div class="st">寫出「恰將滑動」的條件</div>
+        木箱還沒動，摩擦力是靜摩擦力；「恰將滑動」表示靜摩擦力已經達到最大值：
+        <div class="eq"><i class="v">f</i> = <i class="v">f</i><sub>s,max</sub> = <i class="v">μ</i><sub>s</sub><i class="v">N</i></div></li>
+      <li><div class="st">鉛直方向力平衡，求 N</div>
+        鉛直方向只有 <span class="c-N">N</span>（向上）和 <span class="c-W">W</span>（向下）：
+        <div class="eq"><i class="v">N</i> − <i class="v">W</i> = 0　⇒　<i class="v">N</i> = <i class="v">W</i> = 2 kgw</div></li>
+      <li><div class="st">算最大靜摩擦力</div>
+        <div class="eq"><i class="v">f</i><sub>s,max</sub> = <i class="v">μ</i><sub>s</sub><i class="v">N</i> = 0.5 × 2 = 1 kgw</div></li>
+      <li><div class="st">水平方向力平衡，求 F</div>
+        水平方向只有 <span class="c-F">F</span>（向左）和 <span class="c-f">f</span>（向右）：
+        <div class="eq"><i class="v">F</i> = <i class="v">f</i> = 1 kgw</div></li>
+      <li><div class="st">寫出「恰將以 x 軸轉動」的條件</div>
+        恰將繞 O 點翻倒時，木箱右下角恰要離地，地面只剩 O 點撐住木箱，所以 <span class="c-N">N</span> 的作用點就在 O：
+        <div class="eq"><i class="v">d</i> = 0<span class="why">（N 與 f 都通過 x 軸，力矩都是 0）</span></div></li>
+      <li><div class="st">對 x 軸列力矩平衡</div>
+        逆時針為正。<span class="c-F">F</span> 的力臂是 <i class="v">h</i>（逆時針）；<span class="c-W">W</span> 的力臂是 1 m（順時針）：
+        <div class="eq">Σ<i class="v">τ</i> = <i class="v">F</i>·<i class="v">h</i> − <i class="v">W</i>×1 + <i class="v">N</i>×0 + <i class="v">f</i>×0 = 0</div></li>
+      <li><div class="st">代入數字，解出 h</div>
+        <div class="eq">1 × <i class="v">h</i> − 2 × 1 = 0　⇒　<i class="v">h</i> = 2 ÷ 1 = 2 m</div></li>
+    </ol>
+    <div class="ans">答：<i class="v">h</i> = 2 m<small>此時 <i class="v">F</i> = 1 kgw、<i class="v">f</i> = 1 kgw（最大靜摩擦）、<i class="v">N</i> = 2 kgw 集中在 O 點。</small></div>
+
+    <h3>延伸：用文字式看出規律</h3>
+    <p>把步驟 3、4、7 合起來：<i class="v">μ</i><sub>s</sub><i class="v">W</i> · <i class="v">h</i> = <i class="v">W</i> · (<i class="v">b</i>/2)，所以</p>
+    <div class="eq"><i class="v">h</i> = <i class="v">b</i> ÷ (2<i class="v">μ</i><sub>s</sub>) = 2 ÷ (2 × 0.5) = 2 m<span class="why">（W 消掉了：答案跟木箱多重無關）</span></div>
+    <p><b>h 決定誰先發生：</b>F 從 0 慢慢變大時，滑動要等 F 到 1 kgw；傾倒要等 F·h 到 2 kgw·m，也就是 F = 2/h。</p>
+    <div class="tw"><table class="t">
+      <tr><th>施力高度 h</th><th>開始滑動需要 F</th><th>開始傾倒需要 F = 2/h</th><th>先發生</th></tr>
+      <tr><td>1.5 m</td><td>1 kgw</td><td>1.33 kgw</td><td>滑動</td></tr>
+      <tr><td><b>2 m</b></td><td>1 kgw</td><td>1 kgw</td><td><b>同時（本題）</b></td></tr>
+      <tr><td>3 m</td><td>1 kgw</td><td>0.67 kgw</td><td>傾倒</td></tr>
+    </table></div>
+    <p>推得越高越容易推倒；推得越低越容易推動。這也是搬重物時要推下半部的原因。</p>
+  </div>
+
+  <!-- ===================== (2) ===================== -->
+  <div class="tabpanel" id="t2" role="tabpanel">
+    <h3>第 (2) 題：等速向左移動且不傾倒，h 的最大值 = ?</h3>
+    <div class="demo">
+      <button class="btn primary" data-demo="q2">▶ 演示：等速滑動，h = 2.5 m（恰不傾倒）</button>
+      <button class="btn" data-demo="q2lo">h = 2 m（安全）</button>
+      <button class="btn" data-demo="q2hi">h = 3 m（會傾倒）</button>
+    </div>
+    <ol class="steps">
+      <li><div class="st">「等速」代表什麼？</div>
+        等速度 ⇒ 加速度 <i class="v">a</i> = 0 ⇒ 合力 = 0。木箱只平移、不轉動 ⇒ 角加速度 <i class="v">α</i> = 0 ⇒ 合力矩 = 0。所以和靜止一樣，可以用力平衡和力矩平衡。
+        <div class="eq">Σ<i class="v">F</i> = 0，Σ<i class="v">τ</i> = 0</div></li>
+      <li><div class="st">滑動中的摩擦力是動摩擦力</div>
+        <div class="eq"><i class="v">f</i> = <i class="v">f</i><sub>k</sub> = <i class="v">μ</i><sub>k</sub><i class="v">N</i></div></li>
+      <li><div class="st">鉛直力平衡，再算動摩擦力</div>
+        <div class="eq"><i class="v">N</i> = <i class="v">W</i> = 2 kgw　⇒　<i class="v">f</i><sub>k</sub> = 0.4 × 2 = 0.8 kgw</div></li>
+      <li><div class="st">水平力平衡，F 被決定了</div>
+        <div class="eq"><i class="v">F</i> = <i class="v">f</i><sub>k</sub> = 0.8 kgw<span class="why">（F 大於 0.8 會加速，小於 0.8 會減速，等速時只能剛好 0.8）</span></div></li>
+      <li><div class="st">對 x 軸列力矩平衡，求 d</div>
+        <div class="eq"><i class="v">F</i>·<i class="v">h</i> − <i class="v">W</i>×1 + <i class="v">N</i>·<i class="v">d</i> = 0　⇒　0.8<i class="v">h</i> − 2 + 2<i class="v">d</i> = 0　⇒　<i class="v">d</i> = (2 − 0.8<i class="v">h</i>) ÷ 2</div></li>
+      <li><div class="st">寫出「不傾倒」的條件</div>
+        正向力的作用點必須落在接觸面上，所以 <i class="v">d</i> ≥ 0：
+        <div class="eq">(2 − 0.8<i class="v">h</i>) ÷ 2 ≥ 0　⇒　0.8<i class="v">h</i> ≤ 2</div></li>
+      <li><div class="st">解出 h 的範圍</div>
+        <div class="eq"><i class="v">h</i> ≤ 2 ÷ 0.8 = 2.5 m</div>
+        取最大值時 <i class="v">d</i> = 0：木箱一邊等速滑動、一邊恰將繞 O 點翻倒。</li>
+      <li><div class="st">檢查答案合理嗎？</div>
+        2.5 m 小於箱高 4 m，P 點確實在木箱側面上。✓</li>
+    </ol>
+    <div class="ans">答：<i class="v">h</i> 的最大值 = 2.5 m<small>文字式：<i class="v">h</i><sub>max</sub> = <i class="v">b</i> ÷ (2<i class="v">μ</i><sub>k</sub>) = 2 ÷ (2 × 0.4) = 2.5 m</small></div>
+    <h3>為什麼比第 (1) 題的 2 m 高？</h3>
+    <p>動摩擦係數 0.4 比靜摩擦係數 0.5 小，所以維持等速只要 0.8 kgw，比起動時的 1 kgw 小。重力提供的「回正力矩」都是 <i class="v">W</i>×1 = 2 kgw·m；推力變小，力臂 <i class="v">h</i> 就可以拉長到 2 ÷ 0.8 = 2.5 m。</p>
+    <div class="key"><b>小提醒：轉軸跟著木箱移動也沒關係嗎？</b><br>沒關係。木箱做等速度平移時加速度和角加速度都是 0，此時「對任何一條軸」的合力矩都是 0，所以選隨木箱一起走的 x 軸照樣成立。</div>
+  </div>
+
+  <!-- ===================== (3) ===================== -->
+  <div class="tabpanel" id="t3" role="tabpanel">
+    <h3>第 (3) 題：h = 1.5 m、F = 0.8 kgw，正向力的力矩與作用點</h3>
+    <div class="demo">
+      <button class="btn primary" data-demo="q3">▶ 演示：h = 1.5 m，F 從 0 慢慢加到 0.8 kgw</button>
+      <button class="btn" data-demo="q3m">同條件改成「等速滑動中」</button>
+      <button class="btn" data-demo="q3d">顯示地面支撐力的分布</button>
+    </div>
+    <ol class="steps">
+      <li><div class="st">先判斷木箱的狀態</div>
+        <div class="eq"><i class="v">μ</i><sub>s</sub><i class="v">N</i> = 0.5 × 2 = 1 kgw ＞ <i class="v">F</i> = 0.8 kgw</div>
+        若木箱原本靜止：推不動，仍靜止，靜摩擦力 <i class="v">f</i> = <i class="v">F</i> = 0.8 kgw。<br>
+        若木箱原本已在滑動：動摩擦力 <i class="v">μ</i><sub>k</sub><i class="v">N</i> = 0.8 kgw = <i class="v">F</i>，剛好等速。<br>
+        兩種情況都是「平衡」：<i class="v">N</i> = 2 kgw、<i class="v">f</i> = 0.8 kgw，答案相同。</li>
+      <li><div class="st">確認不會傾倒</div>
+        <div class="eq"><i class="v">F</i>·<i class="v">h</i> = 0.8 × 1.5 = 1.2 kgw·m ＜ <i class="v">W</i>×1 = 2 kgw·m　✓</div></li>
+      <li><div class="st">逐一寫出各力對 x 軸的力矩（逆時針為正）</div>
+        <div class="eq"><span class="c-F">τ<sub>F</sub></span> = +<i class="v">F</i>·<i class="v">h</i> = +0.8 × 1.5 = +1.2 kgw·m<span class="why">（逆時針）</span></div>
+        <div class="eq"><span class="c-W">τ<sub>W</sub></span> = −<i class="v">W</i>×1 = −2 × 1 = −2 kgw·m<span class="why">（順時針）</span></div>
+        <div class="eq"><span class="c-f">τ<sub>f</sub></span> = 0<span class="why">（f 的作用線在地面上，通過 x 軸）</span></div>
+        <div class="eq"><span class="c-N">τ<sub>N</sub></span> = ?</div></li>
+      <li><div class="st">力矩平衡，求 τ<sub>N</sub></div>
+        <div class="eq"><i class="v">τ</i><sub>F</sub> + <i class="v">τ</i><sub>W</sub> + <i class="v">τ</i><sub>f</sub> + <i class="v">τ</i><sub>N</sub> = 0</div>
+        <div class="eq">1.2 + (−2) + 0 + <i class="v">τ</i><sub>N</sub> = 0　⇒　<i class="v">τ</i><sub>N</sub> = 2 − 1.2 = +0.8 kgw·m</div>
+        正號表示逆時針，也就是 +x 方向（指出紙面）。</li>
+      <li><div class="st">換算成 SI 單位（參考）</div>
+        <div class="eq">0.8 kgw·m = 0.8 × 9.8 N·m = 7.84 N·m</div></li>
+      <li><div class="st">由 τ<sub>N</sub> = N·d 求作用點</div>
+        <div class="eq"><i class="v">τ</i><sub>N</sub> = <i class="v">N</i> × <i class="v">d</i>　⇒　0.8 = 2 × <i class="v">d</i>　⇒　<i class="v">d</i> = 0.8 ÷ 2 = 0.4 m</div></li>
+    </ol>
+    <div class="ans">答：正向力對 x 軸的力矩 = 0.8 kgw·m（逆時針，+x 方向）；作用點距 O 點 0.4 m<small>沒有推力時 d = 1 m（G 的正下方）；加了推力後，作用點往 O 移動了 F·h ÷ W = 1.2 ÷ 2 = 0.6 m。</small></div>
+
+    <h3>換一條軸驗算：對重心 G 取力矩</h3>
+    <p>平衡時，對任何軸的合力矩都是 0。改以通過 G、平行 x 軸的軸驗算（逆時針為正）：</p>
+    <div class="tw"><table class="t">
+      <tr><th>力</th><th>作用線與 G 的關係</th><th>力臂</th><th>力矩（kgw·m）</th></tr>
+      <tr><td class="c-F">F = 0.8</td><td>在 G 下方 2 − 1.5 = 0.5 m，向左推</td><td>0.5</td><td>−0.8 × 0.5 = −0.4（順時針）</td></tr>
+      <tr><td class="c-f">f = 0.8</td><td>在 G 下方 2 m，向右</td><td>2</td><td>+0.8 × 2 = +1.6（逆時針）</td></tr>
+      <tr><td class="c-N">N = 2</td><td>在 G 左方 1 − 0.4 = 0.6 m，向上</td><td>0.6</td><td>−2 × 0.6 = −1.2（順時針）</td></tr>
+      <tr><td class="c-W">W = 2</td><td>通過 G</td><td>0</td><td>0</td></tr>
+      <tr><th colspan="3">合計</th><th>−0.4 + 1.6 − 1.2 = 0　✓</th></tr>
+    </table></div>
+    <p>換軸後摩擦力就有力矩了，所以選 O 點的 x 軸計算比較省事。兩種算法得到同樣的 d = 0.4 m。</p>
+
+    <h3>「把正向力視為單一位置作用」是什麼意思？</h3>
+    <p>地面其實是用整個底面撐住木箱，靠近 O 的那一側被壓得比較緊。把這些分布的支撐力合成為一個合力 <i class="v">N</i>，合力的作用點就是 <i class="v">d</i>。勾選動畫下方的「顯示地面支撐力的分布」，可以看到推力越大，支撐力越往 O 集中。這裡用線性分布示意，題目只需要合力的位置。</p>
+  </div>
+
+  <!-- ===================== 迷思 ===================== -->
+  <div class="tabpanel" id="t4" role="tabpanel">
+    <h3>常見迷思</h3>
+    <div class="warnbox"><b>✗「正向力一定作用在重心正下方」</b><br>只有在其他力對那一點沒有力矩時才成立。有水平推力時，正向力作用點會往前（O 那側）移動。</div>
+    <div class="warnbox"><b>✗「恰將傾倒時正向力變成 0」</b><br>正向力仍然等於 W = 2 kgw，只是全部集中在 O 點。變成 0 的是木箱右側那一端的支撐力。</div>
+    <div class="warnbox"><b>✗「摩擦力一定有力矩」</b><br>對 x 軸（在地面上）沒有，因為摩擦力的作用線就在地面上、通過轉軸。但對重心 G 就有（見第 (3) 題驗算）。</div>
+    <div class="warnbox"><b>✗「等速運動不能用力矩平衡」</b><br>等速平移時 a = 0、α = 0，力平衡和力矩平衡都成立。</div>
+    <div class="warnbox"><b>✗「第 (2) 題的 F 可以隨便給」</b><br>要等速，F 必須剛好等於動摩擦力 0.8 kgw。</div>
+
+    <h3>想一想（先預測，再用上方動畫驗證）</h3>
+    <details class="q"><summary>Q1. 若 h = 3 m，F 從 0 慢慢增加，木箱先滑還是先倒？在 F 等於多少時發生？</summary>
+      傾倒需要 F·h = 2，F = 2 ÷ 3 ≈ 0.67 kgw；滑動需要 F = 1 kgw。0.67 &lt; 1，所以<b>先傾倒</b>，發生在 F ≈ 0.67 kgw。
+      <div class="demo"><button class="btn" data-demo="q1hi">用動畫驗證</button></div></details>
+    <details class="q"><summary>Q2. 第 (3) 題中，若把施力點降到 h = 0.5 m（F 仍為 0.8 kgw），正向力作用點離 O 多遠？</summary>
+      <i class="v">d</i> = (2 − 0.8 × 0.5) ÷ 2 = 1.6 ÷ 2 = 0.8 m。推得越低，作用點越靠近中央。
+      <div class="demo"><button class="btn" data-demo="qq2">用動畫驗證</button></div></details>
+    <details class="q"><summary>Q3. 若地面比較滑，μ<sub>s</sub> 變成 0.25，第 (1) 題的答案變成多少？</summary>
+      <i class="v">h</i> = <i class="v">b</i> ÷ (2<i class="v">μ</i><sub>s</sub>) = 2 ÷ 0.5 = 4 m，剛好是箱頂。地面越滑越難推倒。可以打開「進階」把 μ<sub>s</sub> 調成 0.25 看判斷圖的交點移動。</details>
+    <details class="q"><summary>Q4. 為什麼第 (1) 題的答案和木箱重量無關？</summary>
+      滑動的門檻 μ<sub>s</sub>W 與傾倒的門檻 W·(b/2)÷h 都和 W 成正比，令兩者相等時 W 消掉，只剩 h = b ÷ (2μ<sub>s</sub>)。</details>
+  </div>
+</section>
+
+<footer>
+  <span class="badge"><span class="dot"></span>Claude 版</span>　互動教材由 Claude 製作｜範例 11：推木箱的滑動與傾倒｜<a href="https://github.com/addielu-phy/claude-sims/tree/main/box-slide-or-tip">GitHub 原始碼</a>｜MIT License
+</footer>
+</div>
+
+<!-- ====== 物理核心（純函式，audit.cjs 會直接載入這一段做檢查） ====== -->
+<script id="physics-core">
+const Phys = (() => {
+  const B = 2, H = 4, G = 9.8;            // 木箱寬、高（m），重力加速度（m/s²）
+  const TOL = 1e-6;
+  const near = (a, b) => Math.abs(a - b) <= TOL;
+  // p = { W (kgw), mus, muk }
+  function thresholds(p) {
+    const N = p.W;
+    const C = p.W * B / 2;                 // 重力對 O 的回正力矩（kgw·m）
+    const Fs = p.mus * N, Fk = p.muk * N;  // 最大靜摩擦、動摩擦（kgw）
+    return { N, C, Fs, Fk, h1: C / Fs, hMax: C / Fk };
+  }
+  function tipForce(p, h) { return h > 0 ? (p.W * B / 2) / h : Infinity; }
+  // 平衡（靜止或等速平移）：N = W，f = F，對 x 軸（過 O）力矩和為 0
+  function equilibrium(p, F, h) {
+    const N = p.W;
+    const tauF = F * h;                    // 逆時針 +
+    const tauW = -p.W * B / 2;             // 順時針 −
+    const tauf = 0;                        // 作用線通過 x 軸
+    const tauNreq = -(tauF + tauW);        // 力矩平衡所需
+    const dReq = tauNreq / N;
+    const feasible = dReq >= -TOL && dReq <= B + TOL;
+    return { F, h, N, f: F, tauF, tauW, tauf, tauNreq, dReq, feasible };
+  }
+  // F 從 0 準靜態增加：先到哪個門檻？
+  function rampEvent(p, h) {
+    const T = thresholds(p), Ft = tipForce(p, h);
+    if (near(T.Fs, Ft)) return { type: 'both', Fev: T.Fs };
+    return T.Fs < Ft ? { type: 'slide', Fev: T.Fs } : { type: 'tip', Fev: Ft };
+  }
+  function classify(p, F, h) {
+    const ev = rampEvent(p, h);
+    if (near(F, ev.Fev)) return { kind: 'critical', ev };
+    return F < ev.Fev ? { kind: 'rest', ev } : { kind: 'event', ev };
+  }
+  // 加速滑動時（對質心取力矩）的正向力作用點
+  function slidingD(p, F, h) {
+    const T = thresholds(p);
+    return B / 2 - (F * (h - H / 2) + T.Fk * H / 2) / p.W;
+  }
+  // 繞 O 傾倒（示意：假設 O 不打滑）的角加速度，th 為逆時針轉角
+  function tipAlpha(p, F, h, th) {
+    const m = p.W, I = m * (B * B + H * H) / 3;
+    const zP = B * Math.sin(th) + h * Math.cos(th);
+    const yG = (B / 2) * Math.cos(th) - (H / 2) * Math.sin(th);
+    return (F * zP - p.W * yG) * G / I;
+  }
+  // 地面支撐力的線性分布（示意）：回傳 y 處的單位長度支撐力
+  function pressure(N, d, y) {
+    if (d <= TOL) return 0;
+    if (d >= B / 3 && d <= 2 * B / 3) {
+      const e = B / 2 - d, k = 12 * N * e / (B * B * B);
+      return Math.max(0, N / B + k * (B / 2 - y));
+    }
+    if (d < B / 3) { const L = 3 * d, p0 = 2 * N / L; return y <= L ? p0 * (1 - y / L) : 0; }
+    const L = 3 * (B - d), p0 = 2 * N / L, u = B - y; return u <= L ? p0 * (1 - u / L) : 0;
+  }
+  return { B, H, G, TOL, near, thresholds, tipForce, equilibrium, rampEvent, classify, slidingD, tipAlpha, pressure };
+})();
+if (typeof module !== 'undefined') module.exports = Phys;
+</script>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const f2 = x => (Math.abs(x) < 0.005 ? 0 : x).toFixed(2).replace('-', '−');
+const sg = x => (x > 0.004 ? '+' : x < -0.004 ? '−' : '') + Math.abs(x).toFixed(2);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const SANS = getComputedStyle(document.documentElement).getPropertyValue('--sans').trim() || 'sans-serif';
+const COL = { F: css('--F'), W: css('--W'), N: css('--N'), f: css('--f'), ink: css('--ink'), muted: css('--muted'), crit: css('--crit') };
+
+const S = {
+  mode: 'ramp', h: 1.5, Fset: 0.8, Fapp: 0.8, W: 2, mus: 0.5, muk: 0.4,
+  ramping: false, phase: 'rest', event: null, X: 0, v: 0, th: 0, om: 0, slideT: 0, paused: false,
+  arms: true, dist: false, vals: true
+};
+const RATE = 0.32;   // 慢慢加力的速率（kgw/s）
+const V0 = 0.7;      // 等速滑動的示意速度（m/s）
+const params = () => ({ W: S.W, mus: S.mus, muk: S.muk });
+
+/* ---------------- 狀態控制 ---------------- */
+function softReset() {
+  S.ramping = false; S.phase = 'rest'; S.event = null; S.th = 0; S.om = 0; S.v = 0; S.slideT = 0;
+  if (S.mode === 'ramp') { S.X = 0; S.Fapp = S.Fset; }
+}
+function beyond() { const ev = Phys.rampEvent(params(), S.h); return { ev, over: S.Fset > ev.Fev + Phys.TOL }; }
+function trigger(ev) {
+  S.event = ev;
+  if (ev.type === 'tip') { S.phase = 'tip'; S.om = 0.06; }
+  else { S.phase = 'slide'; S.v = 0; S.slideT = 0; }
+}
+function startIfOver() {
+  if (S.mode === 'ramp') { const b = beyond(); if (b.over) { S.Fapp = S.Fset; trigger(b.ev); } }
+  else moveCheck();
+}
+function moveCheck() {
+  if (S.mode !== 'moving') return;
+  const T = Phys.thresholds(params());
+  const e = Phys.equilibrium(params(), T.Fk, S.h);
+  if (e.dReq < -Phys.TOL && S.phase === 'rest') { S.phase = 'tip'; S.om = 0.06; S.event = { type: 'tip', Fev: T.Fk }; }
+}
+function play() {
+  if (S.mode === 'ramp') { softReset(); S.Fapp = 0; S.ramping = true; }
+  else { S.paused = !S.paused; }
+  syncUI();
+}
+function setMode(m) {
+  S.mode = m; S.paused = false; softReset(); S.X = 0; moveCheck(); syncUI();
+}
+function setScenario(o) {
+  if (o.mus != null) { S.mus = o.mus; S.muk = Math.min(S.muk, S.mus); }
+  S.mode = o.mode; S.paused = false;
+  if (o.h != null) S.h = o.h;
+  if (o.F != null) S.Fset = o.F;
+  if (o.dist != null) S.dist = o.dist;
+  softReset(); S.X = 0;
+  if (o.ramp) { S.Fapp = 0; S.ramping = true; }
+  moveCheck();
+  syncUI();
+  $('#lab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ---------------- 動態（動畫用） ---------------- */
+function tipStep(dt, F) {
+  const p = params();
+  for (let k = 0; k < 6; k++) {
+    const a = Phys.tipAlpha(p, F, S.h, S.th);
+    S.om += a * dt / 6; S.th += S.om * dt / 6;
+    if (S.om < 0.04) S.om = 0.04;            // 示意：避免停在臨界點
+  }
+  if (S.th >= Math.PI / 2) { S.th = Math.PI / 2; S.om = 0; S.phase = 'fallen'; }
+}
+function step(dt) {
+  const p = params(), T = Phys.thresholds(p);
+  if (S.mode === 'ramp') {
+    if (S.ramping) {
+      S.Fapp = Math.min(S.Fset, S.Fapp + RATE * dt);
+      const b = beyond();
+      if (!S.event && b.over && S.Fapp >= b.ev.Fev) { S.Fapp = b.ev.Fev; trigger(b.ev); }
+      if (S.Fapp >= S.Fset - 1e-9) { S.Fapp = S.Fset; S.ramping = false; }
+    }
+    if (S.phase === 'slide') {
+      const a = Math.max(0, (S.Fapp - T.Fk) * Phys.G / p.W);
+      S.v += a * dt; S.X += S.v * dt; S.slideT += dt;
+      // 加速滑動中也可能翻倒（只有 μs < 0.5 這類進階設定才會發生）
+      if (Phys.slidingD(p, S.Fapp, S.h) < -Phys.TOL) { S.phase = 'tip'; S.om = 0.06; S.event = Object.assign({}, S.event, { tipWhileSliding: true }); }
+      else if (S.slideT > 4.5) S.phase = 'slid';
+    } else if (S.phase === 'tip') {
+      if (S.v > 0) S.X += S.v * dt;
+      tipStep(dt, Math.max(S.Fapp, S.event.Fev * 1.03));
+    }
+  } else {
+    if (!S.paused && S.phase !== 'fallen') S.X += V0 * dt;
+    if (S.phase === 'tip' && !S.paused) tipStep(dt, T.Fk);
+  }
+}
+
+/* ---------------- 給面板用的分析結果 ---------------- */
+function view() {
+  const p = params(), T = Phys.thresholds(p);
+  const o = { T, frozen: '', note: '', cls: 'ok' };
+  if (S.mode === 'moving') {
+    const e = Phys.equilibrium(p, T.Fk, S.h);
+    Object.assign(o, e, { fType: '動摩擦力 μ<sub>k</sub>N' });
+    if (!e.feasible) {
+      o.status = `h = ${f2(S.h)} m ＞ ${f2(T.hMax)} m：木箱一邊滑動、一邊向左傾倒`;
+      o.cls = 'bad'; o.bad = true;
+      o.note = '即使正向力移到 O 點（d = 0），合力矩仍是逆時針 → 傾倒';
+    } else if (Phys.near(e.dReq, 0)) {
+      o.status = '等速滑動，恰將傾倒（h 達最大值）'; o.cls = 'crit';
+    } else { o.status = '等速向左滑動：合力 = 0、合力矩 = 0'; }
+    if (S.phase === 'fallen') o.note = '已傾倒（示意動畫）';
+    return o;
+  }
+  const b = beyond();
+  const reached = S.event || (b.over && !S.ramping);
+  if (reached) {
+    const ev = S.event || b.ev;
+    Object.assign(o, Phys.equilibrium(p, ev.Fev, S.h));
+    o.frozen = '（臨界瞬間的數值）';
+    o.fType = ev.type === 'tip' ? '靜摩擦力（未達最大值）' : '最大靜摩擦力 μ<sub>s</sub>N';
+    o.cls = 'crit';
+    if (ev.type === 'slide') o.status = `F 增加到 ${f2(ev.Fev)} kgw（= μsN）時開始滑動`;
+    else if (ev.type === 'tip') o.status = `F 增加到 ${f2(ev.Fev)} kgw 時開始傾倒（還沒滑動）`;
+    else o.status = `F = ${f2(ev.Fev)} kgw 時恰好同時要滑動、也要傾倒`;
+    if (!S.event) o.note = `設定的 F = ${f2(S.Fset)} kgw 超過臨界值，木箱無法保持靜止。放開滑桿或按「▶」看接下來的動作`;
+    else if (S.phase === 'slide' || S.phase === 'slid') o.note = `之後 F ＞ μkN，木箱加速滑動（動畫示意）；v = ${f2(S.v)} m/s`;
+    else if (S.phase === 'tip') o.note = ev.tipWhileSliding ? '加速滑動中又翻倒了（示意動畫）' : '木箱繞 O 點翻倒中（示意動畫，假設 O 點不打滑）';
+    else if (S.phase === 'fallen') o.note = '已傾倒（示意動畫）';
+    return o;
+  }
+  const F = S.Fapp, e = Phys.equilibrium(p, F, S.h);
+  Object.assign(o, e);
+  const atS = Phys.near(F, T.Fs), atT = Phys.near(e.dReq, 0);
+  o.fType = atS ? '最大靜摩擦力 μ<sub>s</sub>N' : '靜摩擦力';
+  if (atS && atT) { o.status = '恰將滑動，同時恰將傾倒（第 (1) 題的臨界）'; o.cls = 'crit'; }
+  else if (atS) { o.status = '恰將滑動（f 已達最大靜摩擦力）'; o.cls = 'crit'; }
+  else if (atT) { o.status = '恰將傾倒（N 集中在 O 點）'; o.cls = 'crit'; }
+  else o.status = S.ramping ? 'F 慢慢增加中……木箱仍靜止' : '靜止平衡：合力 = 0、合力矩 = 0';
+  return o;
+}
+
+/* ---------------- 面板 ---------------- */
+let lastSig = '';
+function setBar(id, tau) {
+  const el = $(id), M = 3, w = Math.min(Math.abs(tau), M) / M * 50;
+  el.style.width = w + '%';
+  el.style.left = (tau >= 0 ? 50 : 50 - w) + '%';
+}
+function updatePanel() {
+  const o = view();
+  const sig = [S.mode, S.phase, f2(S.Fapp), f2(S.Fset), f2(S.h), S.mus, S.muk, o.status, o.note, f2(S.v), S.ramping].join('|');
+  if (sig === lastSig) return o;
+  lastSig = sig;
+  const st = $('#status'); st.textContent = o.status; st.className = 'pill ' + o.cls;
+  const nt = $('#note'); nt.hidden = !o.note; nt.textContent = o.note;
+  $('#frozen').textContent = o.frozen;
+  $('#vF').textContent = f2(o.F) + ' kgw';
+  $('#vW').textContent = f2(S.W) + ' kgw';
+  $('#vN').textContent = f2(o.N) + ' kgw';
+  $('#vf').textContent = f2(o.f) + ' kgw';
+  $('#vfT').innerHTML = o.fType;
+  $('#vFs').textContent = f2(o.T.Fs) + ' kgw';
+  $('#vFk').textContent = f2(o.T.Fk) + ' kgw';
+  const tauN = o.feasible ? o.tauNreq : 0;
+  const d = o.feasible ? o.dReq : 0;
+  const sum = o.tauF + o.tauW + tauN;
+  setBar('#bF', o.tauF); setBar('#bW', o.tauW); setBar('#bN', tauN); setBar('#bf', 0); setBar('#bS', sum);
+  $('#tF').textContent = sg(o.tauF); $('#tW').textContent = sg(o.tauW); $('#tN').textContent = sg(tauN); $('#tS').textContent = sg(sum);
+  const hh = f2(S.h), FF = f2(o.F);
+  const te = $('#tEq');
+  if (o.feasible) {
+    te.className = 'eqline';
+    te.innerHTML = `F·h − W×1 + N·d = ${FF}×${hh} − ${f2(S.W)}×1 + ${f2(o.N)}×${f2(d)}<br>= ${f2(o.tauF)} − ${f2(-o.tauW)} + ${f2(tauN)} = <b>0</b>（力矩平衡）`;
+  } else {
+    te.className = 'eqline bad';
+    te.innerHTML = `F·h = ${FF}×${hh} = ${f2(o.tauF)} ＞ W×1 = ${f2(-o.tauW)}<br>N 最多只能移到 O 點（τ<sub>N</sub> = 0），合力矩 = ${sg(sum)} ≠ 0 → 傾倒`;
+  }
+  $('#dV').textContent = o.feasible ? `d = ${f2(d)} m` : `需要 d = ${f2(o.dReq)} m（不可能）`;
+  const gw = $('#gauge').clientWidth || 1, B = Phys.B;
+  $('#gW').style.left = (1 / B * 100) + '%';
+  const gn = $('#gN'); gn.style.left = (Math.max(0, Math.min(B, d)) / B * 100) + '%';
+  gn.style.borderBottomColor = o.feasible ? COL.N : COL.crit;
+  const sh = $('#gShift'); const a = Math.max(0, Math.min(B, d)) / B * 100;
+  sh.style.left = a + '%'; sh.style.width = Math.max(0, 50 - a) + '%'; sh.style.display = (50 - a) > 0.5 ? 'block' : 'none';
+  const de = $('#dEq');
+  de.className = o.feasible ? 'eqline' : 'eqline bad';
+  de.innerHTML = `d = (W×1 − F·h) ÷ N = (${f2(S.W)}×1 − ${FF}×${hh}) ÷ ${f2(o.N)} = <b>${f2(o.dReq)} m</b>` +
+    (o.feasible ? `<br>比 G 正下方往 O 移動了 F·h ÷ W = ${f2(o.tauF / S.W)} m` : '<br>d 不能小於 0：正向力只能作用在接觸面上');
+  drawFH(o);
+  return o;
+}
+
+/* ---------------- 主畫面（canvas） ---------------- */
+const cv = $('#scene'), cx = cv.getContext('2d');
+let CW = 0, CH = 0, SC = 1, DPR = 1;
+const VIEW = { y0: -4.2, y1: 4.0, z0: -1.8, z1: 5.0 };
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+  CW = cv.clientWidth; CH = Math.round(Math.min(600, Math.max(330, CW * 0.74)));
+  cv.style.height = CH + 'px';
+  cv.width = Math.round(CW * DPR); cv.height = Math.round(CH * DPR);
+  SC = Math.min(CW / (VIEW.y1 - VIEW.y0), CH / (VIEW.z1 - VIEW.z0));
+  const fc = $('#fh'); const fw = fc.clientWidth; fc.style.height = Math.round(Math.min(320, fw * 0.82)) + 'px';
+  fc.width = Math.round(fw * DPR); fc.height = Math.round(fc.clientHeight * DPR);
+  lastSig = '';
+}
+const yc = (VIEW.y0 + VIEW.y1) / 2, zc = (VIEW.z0 + VIEW.z1) / 2;
+const sx = y => CW / 2 + (y - yc) * SC;
+const sy = z => CH / 2 - (z - zc) * SC;
+const KF = 0.7; // 1 kgw 畫成 0.7 m 長
+function rot(y, z) { const c = Math.cos(S.th), s = Math.sin(S.th); return [y * c - z * s, y * s + z * c]; }
+
+function arrow(ctx, x1, y1, x2, y2, color, w, dashed) {
+  const L = Math.hypot(x2 - x1, y2 - y1); if (L < 1) return;
+  const hl = Math.min(14, Math.max(8, w * 3.6)), ang = Math.atan2(y2 - y1, x2 - x1);
+  ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round';
+  if (dashed) ctx.setLineDash([6, 5]);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - Math.cos(ang) * hl * 0.8, y2 - Math.sin(ang) * hl * 0.8); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - hl * Math.cos(ang - 0.42), y2 - hl * Math.sin(ang - 0.42));
+  ctx.lineTo(x2 - hl * Math.cos(ang + 0.42), y2 - hl * Math.sin(ang + 0.42));
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function text(ctx, s, x, y, o = {}) {
+  ctx.save();
+  ctx.font = `${o.bold ? '700 ' : ''}${o.size || FS}px ${SANS}`;
+  ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.base || 'middle';
+  if (o.halo !== false) { ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(251,250,246,.92)'; ctx.lineJoin = 'round'; ctx.strokeText(s, x, y); }
+  ctx.fillStyle = o.color || COL.ink; ctx.fillText(s, x, y); ctx.restore();
+}
+function dim(ctx, x1, y1, x2, y2, color) { // 雙箭頭標尺
+  arrow(ctx, (x1 + x2) / 2, (y1 + y2) / 2, x1, y1, color, 1.3); arrow(ctx, (x1 + x2) / 2, (y1 + y2) / 2, x2, y2, color, 1.3);
+}
+let FS = 13;
+
+function drawScene(o) {
+  const ctx = cx;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, CW, CH);
+  FS = Math.max(11, Math.min(15, SC * 0.17));
+  const B = Phys.B, H = Phys.H, tipping = S.th > 1e-4;
+  const O = [sx(0), sy(0)];
+
+  // 地面（隨木箱位移捲動）
+  const gTop = sy(0), gBot = sy(-0.3);
+  ctx.fillStyle = '#d8d2c3'; ctx.fillRect(0, gTop, CW, gBot - gTop);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, gTop, CW, gBot - gTop); ctx.clip();
+  ctx.strokeStyle = '#b9b19f'; ctx.lineWidth = 1;
+  const sp = 0.3, off = ((S.X % sp) + sp) % sp;
+  for (let y = VIEW.y0 - 1 + off; y < VIEW.y1 + 1; y += sp) { ctx.beginPath(); ctx.moveTo(sx(y), gBot); ctx.lineTo(sx(y + 0.3), gTop); ctx.stroke(); }
+  ctx.restore();
+  ctx.strokeStyle = '#7d7566'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, gTop); ctx.lineTo(CW, gTop); ctx.stroke();
+  // 起點標記（顯示移動距離）
+  if (S.X > 0.01) {
+    const yS = S.X; if (sx(yS) < CW + 20) { ctx.strokeStyle = COL.muted; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(sx(yS), gTop); ctx.lineTo(sx(yS), sy(0.6)); ctx.stroke(); ctx.setLineDash([]); text(ctx, '起點', sx(yS) + 3, sy(0.75), { size: FS - 2, color: COL.muted }); }
+  }
+
+  // 座標軸
+  ctx.strokeStyle = '#2d3640'; ctx.fillStyle = '#2d3640';
+  arrow(ctx, O[0], O[1], O[0], sy(4.75), '#2d3640', 1.6);
+  text(ctx, 'z', O[0] + 8, sy(4.72), { bold: true, size: FS + 1 });
+  arrow(ctx, O[0], O[1], sx(3.85), O[1], '#2d3640', 1.6);
+  text(ctx, 'y', sx(3.85), O[1] + 12, { bold: true, size: FS + 1, align: 'center' });
+
+  // 木箱
+  const corners = [[0, 0], [B, 0], [B, H], [0, H]].map(c => rot(c[0], c[1]));
+  ctx.save();
+  ctx.beginPath(); corners.forEach((c, i) => i ? ctx.lineTo(sx(c[0]), sy(c[1])) : ctx.moveTo(sx(c[0]), sy(c[1]))); ctx.closePath();
+  const gr = ctx.createLinearGradient(sx(0), 0, sx(B), 0); gr.addColorStop(0, 'rgba(236,206,150,.82)'); gr.addColorStop(1, 'rgba(226,190,128,.82)');
+  ctx.fillStyle = gr; ctx.fill(); ctx.lineWidth = 2.2; ctx.strokeStyle = '#8a5a2b'; ctx.stroke();
+  ctx.clip(); ctx.strokeStyle = 'rgba(138,90,43,.13)'; ctx.lineWidth = 1;
+  for (let k = 1; k < 8; k++) { const a = rot(0, k * 0.5), b = rot(B, k * 0.5); ctx.beginPath(); ctx.moveTo(sx(a[0]), sy(a[1])); ctx.lineTo(sx(b[0]), sy(b[1])); ctx.stroke(); }
+  ctx.restore();
+
+  // 尺寸
+  if (!tipping) {
+    dim(ctx, sx(0), sy(H + 0.28), sx(B), sy(H + 0.28), '#46505b');
+    text(ctx, '2 m', sx(B / 2), sy(H + 0.5), { align: 'center', size: FS });
+    text(ctx, '4 m', sx(-0.12), sy(3.5), { align: 'right', size: FS });
+    // h 標尺
+    if (S.h > 0.12) { dim(ctx, sx(B + 0.3), sy(0), sx(B + 0.3), sy(S.h), '#46505b'); }
+    text(ctx, `h = ${f2(S.h)} m`, sx(B + 0.42), sy(Math.max(0.18, S.h / 2)), { size: FS });
+  }
+  // x 軸符號 ⊙
+  ctx.save(); ctx.strokeStyle = '#2d3640'; ctx.fillStyle = '#2d3640'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.arc(O[0], O[1], 6, 0, 2 * Math.PI); ctx.stroke(); ctx.beginPath(); ctx.arc(O[0], O[1], 2, 0, 2 * Math.PI); ctx.fill(); ctx.restore();
+  text(ctx, 'O', O[0] - 10, O[1] + 14, { bold: true, align: 'right', size: FS + 1 });
+  if (!tipping) text(ctx, 'x 軸（⊙ 指出紙面）', O[0] - 10, O[1] + 14 + FS * 1.3, { align: 'right', size: FS - 2, color: COL.muted });
+
+  // 重心 G、P 點
+  const Gp = rot(B / 2, H / 2), Pp = rot(B, S.h);
+  ctx.fillStyle = COL.ink; ctx.beginPath(); ctx.arc(sx(Gp[0]), sy(Gp[1]), 4, 0, 2 * Math.PI); ctx.fill();
+  text(ctx, 'G', sx(Gp[0]) - 8, sy(Gp[1]) - 10, { bold: true, align: 'right' });
+  ctx.beginPath(); ctx.arc(sx(Pp[0]), sy(Pp[1]), 4, 0, 2 * Math.PI); ctx.fill();
+  text(ctx, 'P', sx(Pp[0]) - 8, sy(Pp[1]) - 11, { bold: true, align: 'right' });
+
+  // 受力（以面板的分析值為準）
+  const F = o.F, N = o.N, f = o.f;
+  const d = o.feasible ? o.dReq : 0;
+  const lw = Math.max(2.4, SC * 0.035);
+  // 支撐力分布（示意）
+  if (S.dist && !tipping && o.feasible) {
+    const n = 15; let pmax = 0; const ps = [];
+    for (let i = 0; i <= n; i++) { const y = i / n * B; const pr = Phys.pressure(N, d, y); ps.push([y, pr]); pmax = Math.max(pmax, pr); }
+    const sca = d <= 1e-6 ? 0 : 1.15 / Math.max(pmax, N / B * 1.5);
+    ctx.save(); ctx.globalAlpha = 0.55;
+    ctx.fillStyle = 'rgba(44,95,200,.12)'; ctx.beginPath(); ctx.moveTo(sx(0), sy(0));
+    ps.forEach(([y, pr]) => ctx.lineTo(sx(y), sy(-pr * sca))); ctx.lineTo(sx(B), sy(0)); ctx.closePath(); ctx.fill();
+    ps.forEach(([y, pr]) => { if (pr * sca > 0.06) arrow(ctx, sx(y), sy(-pr * sca), sx(y), sy(0), COL.N, 1.4); });
+    ctx.restore();
+    if (d <= 1e-6) text(ctx, '支撐力全部集中在 O 點', sx(-0.15), sy(-0.8), { size: FS - 1, color: COL.N, align: 'right', bold: true });
+    else text(ctx, '地面支撐力分布（示意）', sx(-0.15), sy(-0.8), { size: FS - 1, color: COL.N, align: 'right' });
+  }
+  // 力臂
+  if (S.arms && !tipping) {
+    ctx.save(); ctx.setLineDash([5, 5]); ctx.lineWidth = 1.3;
+    ctx.strokeStyle = COL.F; ctx.beginPath(); ctx.moveTo(sx(0), sy(S.h)); ctx.lineTo(sx(B), sy(S.h)); ctx.stroke();
+    ctx.strokeStyle = COL.W; ctx.beginPath(); ctx.moveTo(sx(B / 2), sy(H / 2 - KF * S.W)); ctx.lineTo(sx(B / 2), sy(S.dist ? 0 : -0.8)); ctx.stroke();
+    
+    ctx.restore();
+    // F 的力臂：沿 z 軸從 0 到 h
+    ctx.save(); ctx.strokeStyle = COL.F; ctx.globalAlpha = 0.85; ctx.lineWidth = 5; ctx.lineCap = 'butt';
+    ctx.beginPath(); ctx.moveTo(sx(0) - 7, sy(0)); ctx.lineTo(sx(0) - 7, sy(S.h)); ctx.stroke(); ctx.restore();
+    text(ctx, `F 的力臂 h`, sx(0) - 14, sy(Math.max(S.h / 2, 0.25)), { align: 'right', color: COL.F, size: FS - 1 });
+    // W 與 N 的力臂（地面下方）
+    const bar = (z, y2, col, label) => {
+      ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(sx(0), sy(z)); ctx.lineTo(sx(y2), sy(z)); ctx.stroke();
+      ctx.lineWidth = 1.5; [0, y2].forEach(y => { ctx.beginPath(); ctx.moveTo(sx(y), sy(z) - 5); ctx.lineTo(sx(y), sy(z) + 5); ctx.stroke(); }); ctx.restore();
+      text(ctx, label, sx(0) - 14, sy(z), { align: 'right', color: col, size: FS - 1 });
+    };
+    if (!S.dist) {
+      bar(-0.8, B / 2, COL.W, 'W 的力臂 1 m');
+      if (o.feasible) bar(-1.1, d, COL.N, d > 0.005 ? `N 的力臂 d = ${f2(d)} m` : 'N 的力臂 d = 0');
+      text(ctx, 'f 的力臂 = 0（作用線通過 O）', sx(0) - 14, sy(-1.4), { align: 'right', color: COL.f, size: FS - 1 });
+    }
+  }
+  // 推力 F
+  if (F > 0.005 && S.phase !== 'fallen') {
+    const tail = [Pp[0] + KF * F, Pp[1]];
+    arrow(ctx, sx(tail[0]), sy(tail[1]), sx(Pp[0]), sy(Pp[1]), COL.F, lw);
+    text(ctx, S.vals ? `F = ${f2(F)} kgw` : 'F', sx(Pp[0]) + 8, sy(Pp[1]) - 15, { color: COL.F, bold: true });
+  }
+  // 重力 W
+  arrow(ctx, sx(Gp[0]), sy(Gp[1]), sx(Gp[0]), sy(Gp[1] - KF * S.W), COL.W, lw);
+  text(ctx, S.vals ? `W = ${f2(S.W)} kgw` : 'W', sx(Gp[0]) + 8, sy(Gp[1] - KF * S.W + 0.12), { color: COL.W, bold: true });
+  // 正向力 N 與摩擦力 f（傾倒中只畫在 O 點）
+  if (S.phase !== 'fallen') {
+    const nd = tipping ? 0 : d;
+    arrow(ctx, sx(nd), sy(-KF * N), sx(nd), sy(0), o.feasible || tipping ? COL.N : COL.crit, lw);
+    text(ctx, S.vals ? `N = ${f2(N)} kgw` : 'N', sx(nd) + 8, sy(-KF * N + 0.05), { color: COL.N, bold: true });
+    if (f > 0.005) {
+      arrow(ctx, sx(nd), sy(-0.07), sx(nd + KF * f), sy(-0.07), COL.f, lw);
+      text(ctx, S.vals ? `f = ${f2(f)} kgw` : 'f', sx(nd + KF * f) + 6, sy(-0.2), { color: COL.f, bold: true });
+    }
+    if (!o.feasible && !tipping) text(ctx, '需要 d < 0：辦不到', sx(0.15), sy(-1.32), { color: COL.crit, size: FS - 1, bold: true });
+  }
+  // 運動標示
+  if (S.mode === 'moving' && S.phase !== 'fallen') {
+    arrow(ctx, sx(-1.2), sy(2.7), sx(-2.6), sy(2.7), '#46505b', 2.2);
+    text(ctx, S.paused ? '暫停' : `等速 v = ${f2(V0)} m/s`, sx(-1.9), sy(2.7) + 15, { align: 'center', size: FS - 1 });
+  } else if (S.phase === 'slide' || S.phase === 'slid') {
+    arrow(ctx, sx(-1.2), sy(2.7), sx(-2.6), sy(2.7), '#46505b', 2.2);
+    text(ctx, `加速滑動 v = ${f2(S.v)} m/s`, sx(-1.9), sy(2.7) + 15, { align: 'center', size: FS - 1 });
+  }
+  if (tipping) text(ctx, `繞 x 軸轉了 ${(S.th * 180 / Math.PI).toFixed(0)}°`, sx(0.4), sy(-0.75), { size: FS, color: COL.crit, bold: true });
+}
+
+/* ---------------- F–h 判斷圖 ---------------- */
+const fc = $('#fh'), fx = fc.getContext('2d');
+const FMAX = 2.5, HMAX = 4;
+const FM = { l: 40, r: 12, t: 24, b: 36 };
+function fw() { return fc.clientWidth; } function fhh() { return fc.clientHeight; }
+const px = F => FM.l + F / FMAX * (fw() - FM.l - FM.r);
+const py = h => FM.t + (1 - h / HMAX) * (fhh() - FM.t - FM.b);
+const invF = x => (x - FM.l) / (fw() - FM.l - FM.r) * FMAX;
+const invH = y => (1 - (y - FM.t) / (fhh() - FM.t - FM.b)) * HMAX;
+function drawFH(o) {
+  const ctx = fx, W = fw(), Hh = fhh(); if (!W) return;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, Hh);
+  const T = o.T, C = T.C, Fs = T.Fs, Fk = T.Fk, h1 = T.h1;
+  ctx.save(); ctx.beginPath(); ctx.rect(FM.l, FM.t, W - FM.l - FM.r, Hh - FM.t - FM.b); ctx.clip();
+  const hyp = (ha, hb, n = 40) => { const pts = []; for (let i = 0; i <= n; i++) { const h = ha + (hb - ha) * i / n; pts.push([C / h, h]); } return pts; };
+  const poly = (pts, col) => { ctx.beginPath(); pts.forEach(([F, h], i) => i ? ctx.lineTo(px(F), py(h)) : ctx.moveTo(px(F), py(h))); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); };
+  const hTop = Math.min(h1, HMAX);
+  // 靜止區
+  poly([[0, 0], [Fs, 0], [Fs, hTop], ...(h1 < HMAX ? hyp(h1, HMAX) : []), [0, HMAX]], '#e3f2e8');
+  // 先滑動區
+  poly([[Fs, 0], [FMAX + 1, 0], [FMAX + 1, hTop], [Fs, hTop]], '#fcebd2');
+  // 先傾倒區
+  if (h1 < HMAX) poly([...hyp(h1, HMAX), [FMAX + 1, HMAX], [FMAX + 1, h1]], '#f8dcdc');
+  // 格線
+  ctx.strokeStyle = 'rgba(0,0,0,.07)'; ctx.lineWidth = 1;
+  for (let F = 0.5; F < FMAX; F += 0.5) { ctx.beginPath(); ctx.moveTo(px(F), py(0)); ctx.lineTo(px(F), py(HMAX)); ctx.stroke(); }
+  for (let h = 1; h < HMAX; h++) { ctx.beginPath(); ctx.moveTo(px(0), py(h)); ctx.lineTo(px(FMAX), py(h)); ctx.stroke(); }
+  // 線
+  ctx.lineWidth = 2.2; ctx.strokeStyle = COL.f; ctx.beginPath(); ctx.moveTo(px(Fs), py(0)); ctx.lineTo(px(Fs), py(HMAX)); ctx.stroke();
+  ctx.strokeStyle = COL.F; ctx.beginPath(); hyp(C / FMAX, HMAX, 80).forEach(([F, h], i) => i ? ctx.lineTo(px(F), py(h)) : ctx.moveTo(px(F), py(h))); ctx.stroke();
+  ctx.setLineDash([5, 4]); ctx.lineWidth = 1.6; ctx.strokeStyle = '#6b7a8c'; ctx.beginPath(); ctx.moveTo(px(Fk), py(0)); ctx.lineTo(px(Fk), py(HMAX)); ctx.stroke();
+  if (h1 < HMAX) { ctx.strokeStyle = '#9a8f7c'; ctx.beginPath(); ctx.moveTo(px(Fs), py(h1)); ctx.lineTo(px(FMAX), py(h1)); ctx.stroke(); }
+  ctx.setLineDash([]);
+  const fs = 12;
+  const lab = (s, F, h, col, al = 'center') => text(ctx, s, px(F), py(h), { size: fs, color: col, align: al, bold: true });
+  lab('靜止', Math.min(Fs, C / HMAX) * 0.45 + 0.02, 0.45, '#2f7a52');
+  lab('先滑動', (Fs + FMAX) / 2, Math.min(h1, HMAX) * 0.42, '#a55f00');
+  if (h1 < HMAX - 0.3) lab('先傾倒', (C / ((h1 + HMAX) / 2) + FMAX) / 2 + 0.1, (h1 + HMAX) / 2 + 0.2, COL.crit);
+  text(ctx, 'F = μsN', px(Fs) + 4, py(HMAX) + 9, { size: 11, color: COL.f });
+  text(ctx, 'μkN', px(Fk) - 4, py(HMAX) + 9, { size: 11, color: '#4c5a6b', align: 'right' });
+  text(ctx, 'F·h = W×1', px(C / 1.15) + 6, py(1.15) - 4, { size: 11, color: COL.F });
+  // 題目的關鍵點
+  const key = (F, h, s) => { if (h > HMAX || F > FMAX) return; ctx.fillStyle = '#fff'; ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(px(F), py(h), 4.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke(); text(ctx, s, px(F) + 7, py(h) - 7, { size: 11.5, bold: true }); };
+  key(Fs, h1, '(1)'); key(Fk, T.hMax, '(2)'); key(0.8, 1.5, '(3)');
+  // 目前狀態
+  let Fcur = S.mode === 'moving' ? Fk : S.Fapp;
+  if (S.mode === 'ramp' && (S.ramping || o.frozen)) { ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(px(0), py(S.h)); ctx.lineTo(px(S.Fset), py(S.h)); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.arc(px(S.Fset), py(S.h), 6, 0, 2 * Math.PI); ctx.stroke(); }
+  if (S.mode === 'ramp' && o.frozen) Fcur = o.F;
+  ctx.restore();
+  ctx.fillStyle = o.cls === 'ok' ? '#1d2632' : COL.crit; ctx.beginPath(); ctx.arc(px(Math.min(Fcur, FMAX)), py(S.h), 6.5, 0, 2 * Math.PI); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  // 座標軸
+  ctx.strokeStyle = '#2d3640'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(px(0), py(HMAX)); ctx.lineTo(px(0), py(0)); ctx.lineTo(px(FMAX), py(0)); ctx.stroke();
+  for (let F = 0; F <= FMAX + 1e-9; F += 0.5) text(ctx, F.toFixed(1), px(F), py(0) + 12, { size: 11, align: 'center', color: COL.muted, halo: false });
+  for (let h = 0; h <= HMAX; h++) text(ctx, String(h), px(0) - 6, py(h), { size: 11, align: 'right', color: COL.muted, halo: false });
+  text(ctx, 'F（kgw）', px(FMAX), py(0) + 26, { size: 11.5, align: 'right', color: COL.ink, halo: false });
+  text(ctx, 'h（m）', 4, 10, { size: 11.5, color: COL.ink, halo: false });
+}
+let dragging = false;
+function fhPointer(e, end) {
+  const r = fc.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top;
+  const h = Math.round(Math.max(0, Math.min(HMAX, invH(y))) * 20) / 20;
+  const F = Math.round(Math.max(0, Math.min(FMAX, invF(x))) * 100) / 100;
+  S.h = h; if (S.mode === 'ramp') S.Fset = F;
+  softReset(); if (end) startIfOver(); syncUI();
+}
+fc.addEventListener('pointerdown', e => { dragging = true; fc.setPointerCapture(e.pointerId); fhPointer(e, false); });
+fc.addEventListener('pointermove', e => { if (dragging) fhPointer(e, false); });
+fc.addEventListener('pointerup', e => { if (dragging) { dragging = false; fhPointer(e, true); } });
+fc.addEventListener('pointercancel', () => { dragging = false; });
+
+/* ---------------- UI 同步 ---------------- */
+function syncUI() {
+  const T = Phys.thresholds(params());
+  $('#hR').value = S.h; $('#hV').textContent = f2(S.h) + ' m';
+  const Fshow = S.mode === 'moving' ? T.Fk : S.Fset;
+  $('#FR').value = Fshow; $('#FV').textContent = f2(Fshow) + ' kgw';
+  $('#FR').disabled = S.mode === 'moving';
+  $('#Fhint').textContent = S.mode === 'moving' ? '等速時 F 必須等於動摩擦力 μkN（自動鎖定）' : '放開滑桿後，若超過臨界值，木箱會開始滑動或傾倒';
+  $('#msR').value = S.mus; $('#msV').textContent = f2(S.mus);
+  $('#mkR').value = S.muk; $('#mkV').textContent = f2(S.muk);
+  $('#mRamp').setAttribute('aria-pressed', S.mode === 'ramp'); $('#mMove').setAttribute('aria-pressed', S.mode === 'moving');
+  $('#play').textContent = S.mode === 'ramp' ? '▶ 從 F = 0 慢慢加力' : (S.paused ? '▶ 繼續' : '⏸ 暫停');
+  $('#tArms').checked = S.arms; $('#tDist').checked = S.dist; $('#tVals').checked = S.vals;
+  lastSig = '';
+}
+$('#hR').addEventListener('input', e => { S.h = +e.target.value; softReset(); syncUI(); });
+$('#hR').addEventListener('change', () => { startIfOver(); syncUI(); });
+$('#FR').addEventListener('input', e => { S.Fset = +e.target.value; softReset(); syncUI(); });
+$('#FR').addEventListener('change', () => { startIfOver(); syncUI(); });
+$('#msR').addEventListener('input', e => { S.mus = +e.target.value; if (S.muk > S.mus) S.muk = S.mus; softReset(); moveCheck(); syncUI(); });
+$('#mkR').addEventListener('input', e => { S.muk = Math.min(+e.target.value, S.mus); softReset(); moveCheck(); syncUI(); });
+$('#mRamp').addEventListener('click', () => setMode('ramp'));
+$('#mMove').addEventListener('click', () => setMode('moving'));
+$('#play').addEventListener('click', play);
+$('#reset').addEventListener('click', () => { softReset(); S.X = 0; S.paused = false; moveCheck(); syncUI(); });
+$('#tArms').addEventListener('change', e => { S.arms = e.target.checked; });
+$('#tDist').addEventListener('change', e => { S.dist = e.target.checked; });
+$('#tVals').addEventListener('change', e => { S.vals = e.target.checked; });
+
+const DEMOS = {
+  dist: { mode: 'ramp', h: 1.5, F: 0.8, ramp: true, dist: true },
+  q1: { mode: 'ramp', h: 2, F: 1, ramp: true, mus: 0.5 },
+  q1lo: { mode: 'ramp', h: 1.5, F: 1.3, ramp: true },
+  q1hi: { mode: 'ramp', h: 3, F: 1, ramp: true },
+  q2: { mode: 'moving', h: 2.5 },
+  q2lo: { mode: 'moving', h: 2 },
+  q2hi: { mode: 'moving', h: 3 },
+  q3: { mode: 'ramp', h: 1.5, F: 0.8, ramp: true },
+  q3m: { mode: 'moving', h: 1.5 },
+  q3d: { mode: 'ramp', h: 1.5, F: 0.8, dist: true },
+  qq2: { mode: 'ramp', h: 0.5, F: 0.8, ramp: true }
+};
+document.querySelectorAll('[data-demo]').forEach(b => b.addEventListener('click', () => {
+  const d = DEMOS[b.dataset.demo];
+  // 演示一律用題目原始的摩擦係數
+  S.mus = 0.5; S.muk = 0.4;
+  setScenario(d);
+}));
+document.querySelectorAll('[role=tab]').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('[role=tab]').forEach(x => x.setAttribute('aria-selected', x === t));
+  document.querySelectorAll('.tabpanel').forEach(p => p.classList.toggle('on', p.id === t.dataset.tab));
+}));
+
+/* ---------------- 主迴圈 ---------------- */
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  step(dt);
+  drawScene(updatePanel());
+  requestAnimationFrame(frame);
+}
+window.addEventListener('resize', () => { resize(); });
+resize(); syncUI(); updatePanel();
+requestAnimationFrame(frame);
+window.__sim = { S, view, setScenario, step, syncUI, softReset, startIfOver };
+})();
+</script>
+</body>
+</html>
