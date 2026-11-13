@@ -7,6 +7,7 @@
 | 模擬 | 主題 | 線上版 |
 |---|---|---|
 | [box-slide-or-tip](box-slide-or-tip/) | 範例 11：推木箱，先滑動還是先傾倒（摩擦力、力矩、正向力作用點） | <https://addielu-phy.github.io/claude-sims/box-slide-or-tip/> |
+| [torque-lever](torque-lever/) | 國中 2-5 力矩與槓桿原理：力臂偵測器、米尺槓桿、三種槓桿分類器＋七個情境例題 | <https://addielu-phy.github.io/claude-sims/torque-lever/> |
 
 ## 結構
 
